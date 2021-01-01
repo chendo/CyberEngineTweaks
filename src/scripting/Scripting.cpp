@@ -396,7 +396,18 @@ void Scripting::Initialize()
         Overlay::Get().Log(oss.str());
     };
 
-    m_lua.do_file((Options::Get().Path / "scripts" / "autoexec.lua").string());
+
+    // execute autoexec.lua inside our default script directory
+    std::filesystem::path defPath = Options::Get().Path / "scripts";
+    std::filesystem::current_path(defPath);
+    m_lua.do_file("autoexec.lua");
+    
+    // execute autoexec.lua inside user-set script directory (directory stays set afterwards to this)
+    if (defPath != Options::Get().ScriptsPath)
+    {
+        std::filesystem::current_path(Options::Get().ScriptsPath);
+        m_lua.do_file("autoexec.lua");
+    }
 }
 
 sol::object Scripting::Index(const std::string& acName)
